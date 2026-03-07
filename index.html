@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ガンバレジェンズカード図鑑</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topBar">
+    <div class="topBar-left">
+        <div class="logo">
+            <span class="logo-main">GANBARE</span>
+            <span class="logo-sub">LEGENDS</span>
+        </div>
+    </div>
+    <div class="topBar-center">
+        <div class="searchWrap">
+            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input id="searchBox" placeholder="カード名・スキルで検索...">
+        </div>
+    </div>
+    <div class="topBar-right">
+        <button id="openFilter" class="btn-filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+            </svg>
+            絞り込み
+        </button>
+    </div>
+</div>
+
+<div class="controlBar">
+    <div id="resultCount" class="resultCount"></div>
+    <div class="sortWrap">
+        <span class="sortLabel">並び替え：</span>
+        <select id="sortKey" class="sortSelect">
+            <option value="">デフォルト</option>
+            <option value="atk">ATK（コウゲキ）</option>
+            <option value="def">DEF（ボウギョ）</option>
+            <option value="hp">HP（タイリョク）</option>
+            <option value="spd">SPD（スピード）</option>
+            <option value="hissatsu">必殺（ヒッサツ）</option>
+        </select>
+        <button id="sortOrder" class="sortOrderBtn" data-order="desc" title="昇順/降順切替">
+            <span class="sortArrow">↓</span>
+            <span class="sortOrderLabel">降順</span>
+        </button>
+    </div>
+</div>
+
+<div id="cardList"></div>
+
+<div id="modal">
+    <div class="modalInner">
+        <img id="modalImg" alt="">
+        <p class="modalHint">タップで裏面表示</p>
+    </div>
+</div>
+
+<div id="filterModal">
+    <div class="filterContent">
+        <div class="filterHeader">
+            <h2>絞り込み</h2>
+            <button id="closeFilter" class="closeX">✕</button>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">⚔</span> 属性</h3>
+            <div id="attributeFilters" class="filterGroup"></div>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">★</span> レアリティ</h3>
+            <div id="rarityFilters" class="filterGroup"></div>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">🗡</span> アイコン</h3>
+            <div id="weaponFilters" class="filterGroup"></div>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">⚡</span> アビリティ</h3>
+            <div id="abilityFilters" class="filterGroup"></div>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">🃏</span> カード種別</h3>
+            <div id="cardTypeFilters" class="filterGroup"></div>
+        </div>
+
+        <div class="filterSection">
+            <h3><span class="filterIcon">📺</span> 登場作品</h3>
+            <div id="seriesFilters" class="seriesGrid"></div>
+        </div>
+
+        <div class="filterActions">
+            <button id="resetFilter" class="btn-reset">リセット</button>
+            <button id="applyFilter" class="btn-apply">適用する</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
