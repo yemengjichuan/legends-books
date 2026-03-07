@@ -8,7 +8,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["剣"],
       "series": "仮面ライダーガヴ",
-      "image": "/images/CX01-001.jpg",
+      "image": "images/CX01-001.jpg",
       "stats": { "atk": 3800, "def": 4200, "hp": 4800, "spd": 2, "hissatsu": 7900 },
       "leaderAbilities": [
         {
@@ -33,7 +33,7 @@
       "attribute": "アタッカー",
       "battleType": ["剣"],
       "series": "仮面ライダーガヴ",
-      "image": "/images/CX01-007.jpg",
+      "image": "images/CX01-007.jpg",
       "stats": { "atk": 4500, "def": 3700, "hp": 4900, "spd": 3, "hissatsu": 7600 },
       "leaderAbilities": [
         {
@@ -58,7 +58,7 @@
       "attribute": "アタッカー",
       "battleType": ["剣"],
       "series": "仮面ライダーガヴ",
-      "image": "/images/CX01-007_p1.jpg",
+      "image": "images/CX01-007_p1.jpg",
       "stats": { "atk": 4500, "def": 3700, "hp": 4900, "spd": 3, "hissatsu": 7600 },
       "leaderAbilities": [
         {
@@ -83,7 +83,7 @@
       "attribute": "ディフェンダー",
       "battleType": ["パンチ"],
       "series": "仮面ライダーゼロワン",
-      "image": "/images/CX01-009.jpg",
+      "image": "images/CX01-009.jpg",
       "stats": { "atk": 3500, "def": 4500, "hp": 5500, "spd": 1, "hissatsu": 7200 },
       "leaderAbilities": [
         {
@@ -108,7 +108,7 @@
       "attribute": "アタッカー",
       "battleType": ["銃"],
       "series": "仮面ライダーギーツ",
-      "image": "/images/CX01-016.jpg",
+      "image": "images/CX01-016.jpg",
       "stats": { "atk": 4500, "def": 4200, "hp": 4600, "spd": 4, "hissatsu": 7400 },
       "leaderAbilities": [
         {
@@ -133,7 +133,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["剣"],
       "series": "仮面ライダークウガ",
-      "image": "/images/CX01-021.jpg",
+      "image": "images/CX01-021.jpg",
       "stats": { "atk": 3900, "def": 4300, "hp": 4700, "spd": 3, "hissatsu": 7800 },
       "leaderAbilities": [
         {
@@ -157,7 +157,7 @@
       "attribute": "ディフェンダー",
       "battleType": ["パンチ"],
       "series": "仮面ライダー龍騎",
-      "image": "/images/CX01-029.jpg",
+      "image": "images/CX01-029.jpg",
       "stats": { "atk": 4000, "def": 4600, "hp": 5400, "spd": 1, "hissatsu": 6700 },
       "leaderAbilities": [
         {
@@ -205,7 +205,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["剣"],
       "series": "仮面ライダー電王",
-      "image": "/images/CX01-039.jpg",
+      "image": "images/CX01-039.jpg",
       "stats": { "atk": 4200, "def": 3900, "hp": 4800, "spd": 3, "hissatsu": 7800 },
       "leaderAbilities": [
         {
@@ -229,7 +229,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["剣"],
       "series": "仮面ライダー電王",
-      "image": "/images/CX01-039_p1.jpg",
+      "image": "images/CX01-039_p1.jpg",
       "stats": { "atk": 4200, "def": 3900, "hp": 4800, "spd": 3, "hissatsu": 7800 },
       "leaderAbilities": [
         {
@@ -253,7 +253,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["パンチ"],
       "series": "仮面ライダーダブル",
-      "image": "/images/CX01-044.jpg",
+      "image": "images/CX01-044.jpg",
       "stats": { "atk": 3800, "def": 4100, "hp": 4900, "spd": 3, "hissatsu": 7900 },
       "leaderAbilities": [
         {
@@ -277,7 +277,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["パンチ"],
       "series": "仮面ライダーダブル",
-      "image": "/images/CX01-044_p1.jpg",
+      "image": "images/CX01-044_p1.jpg",
       "stats": { "atk": 3800, "def": 4100, "hp": 4900, "spd": 3, "hissatsu": 7900 },
       "leaderAbilities": [
         {
@@ -301,7 +301,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["パンチ"],
       "series": "仮面ライダー",
-      "image": "/images/CX01-056.jpg",
+      "image": "images/CX01-056.jpg",
       "stats": { "atk": 4000, "def": 3900, "hp": 4800, "spd": 2, "hissatsu": 8000 },
       "leaderAbilities": [
         {
@@ -325,7 +325,7 @@
       "attribute": "フィニッシャー",
       "battleType": ["剣"],
       "series": "仮面ライダーBLACK RX",
-      "image": "/images/CX01-062.jpg",
+      "image": "images/CX01-062.jpg",
       "stats": { "atk": 3800, "def": 4200, "hp": 4700, "spd": 2, "hissatsu": 8000 },
       "leaderAbilities": [
         {
@@ -349,7 +349,7 @@
       "attribute": "アタッカー",
       "battleType": ["銃"],
       "series": "仮面ライダーガヴ",
-      "image": "/images/CX02-003.jpg",
+      "image": "images/CX02-003.jpg",
       "stats": { "atk": 4600, "def": 4200, "hp": 4600, "spd": 4, "hissatsu": 7300 },
       "leaderAbilities": [
         {
@@ -369,4 +369,5 @@
 
 
   ]
+
 }
