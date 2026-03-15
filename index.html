@@ -151,22 +151,16 @@
     </div>
 </div>
 
-<!-- ===== カード選択ページ ===== -->
-<div id="selectPage" class="selectPage">
-    <div class="selectHeader">
-        <button id="closeSelect" class="btn-back">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            戻る
-        </button>
-        <span class="selectTitle" id="selectTitle">所持カードを選択</span>
-        <span class="selectCount" id="selectCount">0枚選択中</span>
-    </div>
-    <div id="selectCardList" class="selectCardList"></div>
-    <div class="selectFooter">
-        <button id="selectDone" class="btn-selectDone">完了</button>
-    </div>
+<!-- ===== 選択モードバー（メイン一覧上部に表示） ===== -->
+<div id="selectBar" class="selectBar" style="display:none">
+    <button id="cancelSelect" class="btn-cancelSelect">キャンセル</button>
+    <span class="selectBarTitle" id="selectBarTitle">所持カードを選択</span>
+    <span class="selectBarCount" id="selectCount">0枚</span>
+</div>
+
+<!-- ===== 選択モード完了フッター ===== -->
+<div id="selectFooter" class="selectFooter" style="display:none">
+    <button id="selectDone" class="btn-selectDone">完了</button>
 </div>
 
 <script src="script.js"></script>
