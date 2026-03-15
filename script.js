@@ -285,49 +285,72 @@ document.querySelectorAll(".profileTab").forEach(tab => {
 })
 
 
-// ===== カード選択ページ =====
-const selectPage = document.getElementById("selectPage")
-let selectMode = "owned"       // "owned" or "favorites"
-let selectTemp = new Set()     // 選択中の一時セット
+// ===== カード選択モード（メイン一覧を使用） =====
+let selectMode = null   // "owned" or "favorites" or null
+let selectTemp = new Set()
 
-function openSelectPage(mode) {
+function openSelectMode(mode) {
     selectMode = mode
     selectTemp = new Set(mode === "owned" ? getOwned() : getFavorites())
 
-    document.getElementById("selectTitle").textContent =
+    // プロフィールを閉じてメイン一覧へ
+    closeProfilePage()
+
+    // bodyにクラスを付与
+    document.body.classList.add("select-mode")
+    document.body.classList.toggle("select-fav", mode === "favorites")
+
+    // バーとフッターを表示
+    document.getElementById("selectBar").style.display = "flex"
+    document.getElementById("selectFooter").style.display = "block"
+    document.getElementById("selectBarTitle").textContent =
         mode === "owned" ? "所持カードを選択" : "お気に入りを選択"
-
-    selectPage.classList.add("open")
-    renderSelectList()
-}
-
-function closeSelectPage() {
-    selectPage.classList.remove("open")
-}
-
-function renderSelectList() {
-    const area = document.getElementById("selectCardList")
-    area.innerHTML = ""
     updateSelectCount()
+
+    // カードを選択モードで再描画
+    renderSelectCards()
+}
+
+function exitSelectMode() {
+    selectMode = null
+    document.body.classList.remove("select-mode", "select-fav")
+    document.getElementById("selectBar").style.display    = "none"
+    document.getElementById("selectFooter").style.display = "none"
+    // 通常表示に戻す
+    applyFilters()
+}
+
+function updateSelectCount() {
+    document.getElementById("selectCount").textContent = `${selectTemp.size}枚`
+}
+
+function renderSelectCards() {
+    const area = document.getElementById("cardList")
+    area.innerHTML = ""
 
     cards.forEach(card => {
         const div = document.createElement("div")
-        const isSelected = selectTemp.has(card.cardNumber)
-        const selClass = selectMode === "favorites" ? "selected-fav" : "selected"
-        div.className = "select-card" + (isSelected ? " " + selClass : "")
+        div.className = "card" + (selectTemp.has(card.cardNumber) ? " sel-active" : "")
 
-        div.innerHTML = `
-            <img src="${card.image}" loading="lazy" alt="${card.name || ''}">
-            <span class="select-check">✓</span>
-        `
+        const img = document.createElement("img")
+        img.src = card.image
+        img.loading = "lazy"
+        img.alt = card.name || ""
+        div.appendChild(img)
+
+        // チェックマーク
+        const check = document.createElement("span")
+        check.className = "sel-check"
+        check.textContent = "✓"
+        div.appendChild(check)
 
         div.onclick = () => {
             if (selectTemp.has(card.cardNumber)) {
                 selectTemp.delete(card.cardNumber)
-                div.classList.remove("selected", "selected-fav")
+                div.classList.remove("sel-active")
             } else {
                 selectTemp.add(card.cardNumber)
-                div.classList.add(selectMode === "favorites" ? "selected-fav" : "selected")
+                div.classList.add("sel-active")
             }
             updateSelectCount()
         }
@@ -336,28 +359,19 @@ function renderSelectList() {
     })
 }
 
-function updateSelectCount() {
-    document.getElementById("selectCount").textContent = `${selectTemp.size}枚選択中`
-}
+// キャンセル
+document.getElementById("cancelSelect").onclick = exitSelectMode
 
-// 完了ボタン
+// 完了
 document.getElementById("selectDone").onclick = () => {
-    if (selectMode === "owned") {
-        saveOwned([...selectTemp])
-    } else {
-        saveFavorites([...selectTemp])
-    }
+    if (selectMode === "owned") saveOwned([...selectTemp])
+    else saveFavorites([...selectTemp])
     updateProfileBtn()
-    applyFilters()
-    closeSelectPage()
-    document.getElementById("ownedCount").textContent = getOwned().length
-    document.getElementById("favCount").textContent   = getFavorites().length
-    renderProfileTab(currentProfileTab)
+    exitSelectMode()
+    // プロフィールを開き直して反映
+    openProfilePage()
 }
-
-// 選択ページの「戻る」
-document.getElementById("closeSelect").onclick = closeSelectPage
 
 // プロフィールの「選択ボタン」
-document.getElementById("goSelectOwned").onclick = () => openSelectPage("owned")
-document.getElementById("goSelectFav").onclick   = () => openSelectPage("favorites")
+document.getElementById("goSelectOwned").onclick = () => openSelectMode("owned")
+document.getElementById("goSelectFav").onclick   = () => openSelectMode("favorites")
