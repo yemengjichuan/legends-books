@@ -252,7 +252,7 @@ body {
 #modalImg {
     max-width: min(92vw, 420px);
     max-height: 85vh;
-    border-radius: 16px;
+    border-radius: 20px;
     box-shadow: 0 0 40px rgba(0,200,255,0.2);
     cursor: pointer;
 }
@@ -541,111 +541,102 @@ body {
     border-color: var(--gold);
 }
 
-/* ===== CARD SELECT PAGE ===== */
-.selectPage {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    z-index: 3000;
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-}
-.selectPage.open { display: flex; }
-
-.selectHeader {
+/* ===== SELECT MODE BAR ===== */
+.selectBar {
+    position: sticky;
+    top: 60px;
+    z-index: 90;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 0 14px;
-    height: 56px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+    height: 50px;
+    background: #0a1628;
+    border-bottom: 2px solid var(--accent);
 }
-.selectTitle {
+.btn-cancelSelect {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-family: var(--font-body);
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-cancelSelect:hover { border-color: var(--accent2); color: var(--accent2); }
+.selectBarTitle {
     flex: 1;
-    font-family: var(--font-display);
-    font-size: 17px;
-    letter-spacing: 0.06em;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--text);
 }
-.selectCount {
+.selectBarCount {
     font-size: 13px;
     color: var(--accent);
     font-weight: 700;
     white-space: nowrap;
 }
 
-/* カード選択グリッド */
-#selectCardList {
-    flex: 1;
-    overflow-y: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
-    padding: 10px;
-    align-content: start;
-}
-
-/* 選択モードのカード：デフォルトは暗め */
-.select-card {
-    position: relative;
-    cursor: pointer;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid transparent;
-    transition: border-color 0.15s, opacity 0.15s;
-}
-.select-card img {
-    width: 100%;
-    display: block;
-    opacity: 0.45;
+/* 選択モード中のカード */
+body.select-mode #cardList .card img {
+    opacity: 0.4;
     transition: opacity 0.15s;
 }
-/* 選択済み：明るく光る */
-.select-card.selected img {
+body.select-mode #cardList .card {
+    border-color: transparent;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+body.select-mode #cardList .card:hover {
+    transform: none;
+    box-shadow: none;
+}
+body.select-mode #cardList .card.sel-active img {
     opacity: 1;
 }
-.select-card.selected {
+body.select-mode #cardList .card.sel-active {
     border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(0,200,255,0.5);
+    box-shadow: 0 0 14px rgba(0,200,255,0.45);
 }
-.select-card.selected-fav {
+body.select-mode.select-fav #cardList .card.sel-active {
     border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(245,200,66,0.5);
+    box-shadow: 0 0 14px rgba(245,200,66,0.45);
 }
-.select-card.selected-fav img { opacity: 1; }
 
 /* 選択チェックマーク */
-.select-check {
+.sel-check {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 20px;
-    height: 20px;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: var(--accent);
     display: none;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
     color: #000;
     font-weight: 900;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
-.select-card.selected .select-check { display: flex; }
-.select-card.selected-fav .select-check {
-    display: flex;
-    background: var(--gold);
-}
+body.select-fav .sel-check { background: var(--gold); }
+.card.sel-active .sel-check { display: flex; }
 
+/* 選択完了フッター */
 .selectFooter {
-    padding: 12px 14px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 12px 16px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     background: var(--surface);
     border-top: 1px solid var(--border);
-    flex-shrink: 0;
+    z-index: 90;
 }
 .btn-selectDone {
     width: 100%;
@@ -661,8 +652,17 @@ body {
     transition: background 0.2s;
 }
 .btn-selectDone:hover { background: #33d4ff; }
+body.select-fav .btn-selectDone {
+    background: var(--gold);
+}
+body.select-fav .btn-selectDone:hover {
+    background: #f8d96a;
+}
 
-/* ===== RESPONSIVE ===== */
+/* 選択モード中はフッター分の余白を確保 */
+body.select-mode #cardList {
+    padding-bottom: 80px;
+}
 @media (max-width: 480px) {
     .logo-main { font-size: 14px; }
     .logo-sub { font-size: 8px; }
@@ -677,7 +677,9 @@ body {
     .seriesGrid { grid-template-columns: 1fr; }
 
     #selectCardList {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 10px;
     }
     .profileCardList {
         grid-template-columns: repeat(3, 1fr);
