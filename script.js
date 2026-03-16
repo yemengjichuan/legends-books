@@ -671,11 +671,11 @@ document.getElementById("saveTierImage").onclick = async () => {
         }
 
         // サイズ計算
-        const LABEL_W = 56
-        const CARD_W  = 54
-        const CARD_H  = 76
-        const GAP     = 4
-        const PAD     = 8
+        const LABEL_W = 80
+        const CARD_W  = 100
+        const CARD_H  = 140
+        const GAP     = 6
+        const PAD     = 10
         const ROW_MIN_H = CARD_H + PAD * 2
 
         const maxCards = Math.max(...rows.map(r => r.cards.length))
@@ -718,7 +718,7 @@ document.getElementById("saveTierImage").onclick = async () => {
 
             // ラベルテキスト
             ctx.fillStyle = row.color
-            ctx.font = `bold ${row.label.length > 2 ? 16 : 22}px sans-serif`
+            ctx.font = `bold ${row.label.length > 2 ? 22 : 32}px sans-serif`
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
             ctx.fillText(row.label, LABEL_W / 2, y + rowH / 2)
