@@ -670,77 +670,51 @@ document.getElementById("saveTierImage").onclick = async () => {
             return
         }
 
-        // 1枚目のカード画像を読み込んで実サイズを取得
         const sampleCard = cards.find(c => c.cardNumber === rows[0].cards[0])
         const sampleImg  = await loadImage(sampleCard.image)
         const CARD_W = sampleImg.naturalWidth
         const CARD_H = sampleImg.naturalHeight
 
-        const LABEL_W = Math.round(CARD_W * 0.7)
-        const GAP     = Math.round(CARD_W * 0.06)
-        const PAD     = Math.round(CARD_W * 0.1)
+        const LABEL_W   = Math.round(CARD_W * 0.7)
+        const GAP       = Math.round(CARD_W * 0.06)
+        const PAD       = Math.round(CARD_W * 0.1)
         const ROW_MIN_H = CARD_H + PAD * 2
 
         const maxCards = Math.max(...rows.map(r => r.cards.length))
-        const canvasW  = LABEL_W + PAD + maxCards * (CARD_W + GAP) + PAD
-        const canvasH  = rows.length * ROW_MIN_H
-
-        const canvas  = document.createElement("canvas")
-        canvas.width  = Math.max(canvasW, 400)
-        canvas.height = canvasH
+        const canvas   = document.createElement("canvas")
+        canvas.width   = Math.max(LABEL_W + PAD + maxCards * (CARD_W + GAP) + PAD, 400)
+        canvas.height  = rows.length * ROW_MIN_H
         const ctx = canvas.getContext("2d")
 
-        // 背景
         ctx.fillStyle = "#080c14"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
         let y = 0
         for (const row of rows) {
             const rowH = ROW_MIN_H
-
-            // ラベル背景
             ctx.fillStyle = row.color + "33"
             ctx.fillRect(0, y, LABEL_W, rowH)
-
-            // 右区切り線
             ctx.strokeStyle = row.color + "88"
             ctx.lineWidth = 2
-            ctx.beginPath()
-            ctx.moveTo(LABEL_W, y)
-            ctx.lineTo(LABEL_W, y + rowH)
-            ctx.stroke()
-
-            // 下区切り線
+            ctx.beginPath(); ctx.moveTo(LABEL_W, y); ctx.lineTo(LABEL_W, y + rowH); ctx.stroke()
             ctx.strokeStyle = "rgba(255,255,255,0.1)"
             ctx.lineWidth = 1
-            ctx.beginPath()
-            ctx.moveTo(0, y + rowH)
-            ctx.lineTo(canvas.width, y + rowH)
-            ctx.stroke()
-
-            // ラベルテキスト
+            ctx.beginPath(); ctx.moveTo(0, y + rowH); ctx.lineTo(canvas.width, y + rowH); ctx.stroke()
             ctx.fillStyle = row.color
-            const fontSize = row.label.length > 2
-                ? Math.round(LABEL_W * 0.35)
-                : Math.round(LABEL_W * 0.5)
-            ctx.font = `bold ${fontSize}px sans-serif`
-            ctx.textAlign = "center"
-            ctx.textBaseline = "middle"
+            ctx.font = `bold ${row.label.length > 2 ? Math.round(LABEL_W * 0.35) : Math.round(LABEL_W * 0.5)}px sans-serif`
+            ctx.textAlign = "center"; ctx.textBaseline = "middle"
             ctx.fillText(row.label, LABEL_W / 2, y + rowH / 2)
 
-            // カード描画
             let x = LABEL_W + PAD
             for (const cn of row.cards) {
                 const card = cards.find(c => c.cardNumber === cn)
                 if (!card) { x += CARD_W + GAP; continue }
-
                 try {
                     const img = await loadImage(card.image)
                     const r = Math.round(CARD_W * 0.06)
                     ctx.save()
                     ctx.beginPath()
-                    ctx.moveTo(x + r, y + PAD)
-                    ctx.lineTo(x + CARD_W - r, y + PAD)
+                    ctx.moveTo(x + r, y + PAD); ctx.lineTo(x + CARD_W - r, y + PAD)
                     ctx.quadraticCurveTo(x + CARD_W, y + PAD, x + CARD_W, y + PAD + r)
                     ctx.lineTo(x + CARD_W, y + PAD + CARD_H - r)
                     ctx.quadraticCurveTo(x + CARD_W, y + PAD + CARD_H, x + CARD_W - r, y + PAD + CARD_H)
@@ -748,8 +722,7 @@ document.getElementById("saveTierImage").onclick = async () => {
                     ctx.quadraticCurveTo(x, y + PAD + CARD_H, x, y + PAD + CARD_H - r)
                     ctx.lineTo(x, y + PAD + r)
                     ctx.quadraticCurveTo(x, y + PAD, x + r, y + PAD)
-                    ctx.closePath()
-                    ctx.clip()
+                    ctx.closePath(); ctx.clip()
                     ctx.drawImage(img, x, y + PAD, CARD_W, CARD_H)
                     ctx.restore()
                 } catch {
@@ -761,9 +734,24 @@ document.getElementById("saveTierImage").onclick = async () => {
             y += rowH
         }
 
-        const dataUrl = canvas.toDataURL("image/png")
-        document.getElementById("imageModalImg").src = dataUrl
-        document.getElementById("imageModal").style.display = "flex"
+        // まずダウンロード試行、ダメならモーダル表示
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement("a")
+            link.href = url
+            link.download = "tier_" + new Date().toISOString().slice(0,10) + ".png"
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            setTimeout(() => URL.revokeObjectURL(url), 3000)
+
+            // iOSはダウンロードできないのでモーダルも同時に表示
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            if (isIOS) {
+                document.getElementById("imageModalImg").src = canvas.toDataURL("image/png")
+                document.getElementById("imageModal").style.display = "flex"
+            }
+        }, "image/png")
 
     } catch(e) {
         alert("画像生成に失敗しました: " + e.message)
@@ -773,7 +761,6 @@ document.getElementById("saveTierImage").onclick = async () => {
     btn.disabled = false
 }
 
-// 画像読み込みヘルパー
 function loadImage(src) {
     return new Promise((resolve, reject) => {
         const img = new Image()
