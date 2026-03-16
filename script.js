@@ -296,6 +296,8 @@ document.getElementById("goSelectFav2").onclick  = () => openSelectMode("favorit
 // ===== ティア表 =====
 let dragSrc  = null
 let tierData = null
+let trayFilter = "all"
+let traySearch = ""
 
 function initTierTray() {
     tierData = getTierData()
@@ -313,6 +315,21 @@ function renderTierTable() {
     tierData = getTierData()
     renderTierRows()
     renderTierTray()
+
+    // トレイ検索
+    document.getElementById("traySearchBox").oninput = function() {
+        traySearch = this.value.toLowerCase()
+        renderTierTray()
+    }
+    // トレイフィルター
+    document.querySelectorAll(".trayFilterBtn").forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll(".trayFilterBtn").forEach(b => b.classList.remove("active"))
+            btn.classList.add("active")
+            trayFilter = btn.dataset.filter
+            renderTierTray()
+        }
+    })
 }
 
 function renderTierRows() {
@@ -332,7 +349,7 @@ function renderTierRows() {
         cardsEl.className = "tierCards"
         row.cards.forEach(cn => {
             const card = cards.find(c => c.cardNumber === cn)
-            if (card) cardsEl.appendChild(makeTierCard(card, row.id))
+            if (card) cardsEl.appendChild(makeTierCard(card, row.id, true))
         })
         setupDropZone(cardsEl, row.id)
         rowEl.appendChild(cardsEl)
@@ -343,18 +360,66 @@ function renderTierRows() {
 function renderTierTray() {
     const area = document.getElementById("tierTrayCards")
     area.innerHTML = ""
-    tierData.tray.forEach(cn => {
+
+    // フィルター・検索を適用
+    const filtered = tierData.tray.filter(cn => {
         const card = cards.find(c => c.cardNumber === cn)
-        if (card) area.appendChild(makeTierCard(card, "tray"))
+        if (!card) return false
+        if (trayFilter !== "all") {
+            const rarityMatch = card.rarity === trayFilter
+            const weaponMatch = (card.battleType || []).includes(trayFilter)
+            if (!rarityMatch && !weaponMatch) return false
+        }
+        if (traySearch) {
+            const text = JSON.stringify(card).toLowerCase()
+            if (!text.includes(traySearch)) return false
+        }
+        return true
+    })
+
+    document.getElementById("trayCount").textContent = tierData.tray.length
+    filtered.forEach(cn => {
+        const card = cards.find(c => c.cardNumber === cn)
+        if (card) area.appendChild(makeTierCard(card, "tray", false))
     })
     setupDropZone(area, "tray")
 }
 
-function makeTierCard(card, fromId) {
+function makeTierCard(card, fromId, showBack) {
     const div = document.createElement("div")
     div.className = "tierCard"
     div.draggable = true
     div.innerHTML = `<img src="${card.image}" loading="lazy" alt="${card.name || ''}">`
+
+    // ティア行にあるカードは「×」ボタンでトレイに戻す＋左右移動ボタン
+    if (showBack) {
+        const backBtn = document.createElement("button")
+        backBtn.className = "tierCardBack"
+        backBtn.textContent = "✕"
+        backBtn.onclick = e => {
+            e.stopPropagation()
+            moveCard(card.cardNumber, fromId, "tray")
+        }
+        div.appendChild(backBtn)
+
+        const leftBtn = document.createElement("button")
+        leftBtn.className = "tierCardMoveLeft"
+        leftBtn.textContent = "◀"
+        leftBtn.onclick = e => {
+            e.stopPropagation()
+            moveCardInRow(card.cardNumber, fromId, -1)
+        }
+        div.appendChild(leftBtn)
+
+        const rightBtn = document.createElement("button")
+        rightBtn.className = "tierCardMoveRight"
+        rightBtn.textContent = "▶"
+        rightBtn.onclick = e => {
+            e.stopPropagation()
+            moveCardInRow(card.cardNumber, fromId, 1)
+        }
+        div.appendChild(rightBtn)
+    }
 
     // PC ドラッグ
     div.addEventListener("dragstart", e => {
@@ -373,7 +438,6 @@ function makeTierCard(card, fromId) {
 
         if (navigator.vibrate) navigator.vibrate(15)
 
-        // 浮遊クローン作成
         const clone = div.cloneNode(true)
         clone.style.cssText = [
             "position:fixed","z-index:9998","pointer-events:none",
@@ -392,7 +456,6 @@ function makeTierCard(card, fromId) {
             const mt = ev.touches[0]
             clone.style.left = (mt.clientX - w / 2) + "px"
             clone.style.top  = (mt.clientY - h / 2) + "px"
-
             document.querySelectorAll(".drag-over").forEach(z => z.classList.remove("drag-over"))
             clone.style.visibility = "hidden"
             const hit = document.elementFromPoint(mt.clientX, mt.clientY)
@@ -409,9 +472,7 @@ function makeTierCard(card, fromId) {
             clone.remove()
             div.style.opacity = ""
             document.querySelectorAll(".drag-over").forEach(z => z.classList.remove("drag-over"))
-
             const et = ev.changedTouches[0]
-            clone.style.visibility = "hidden"
             const hit = document.elementFromPoint(et.clientX, et.clientY)
             if (hit) {
                 const dropRow  = hit.closest(".tierCards")
@@ -461,6 +522,79 @@ function moveCard(cardNumber, fromId, toId) {
     saveTierData(tierData)
     renderTierRows()
     renderTierTray()
+}
+
+// ティア行内の左右移動
+function moveCardInRow(cardNumber, rowId, dir) {
+    const row = tierData.rows.find(r => r.id === rowId)
+    if (!row) return
+    const idx = row.cards.indexOf(cardNumber)
+    if (idx === -1) return
+    const newIdx = idx + dir
+    if (newIdx < 0 || newIdx >= row.cards.length) return
+    row.cards.splice(idx, 1)
+    row.cards.splice(newIdx, 0, cardNumber)
+    saveTierData(tierData)
+    renderTierRows()
+}
+
+// リセット（確認ダイアログつき）
+function showConfirm(message, onOk) {
+    const overlay = document.createElement("div")
+    overlay.className = "confirmOverlay"
+    overlay.innerHTML = `
+        <div class="confirmBox">
+            <p>${message}</p>
+            <div class="confirmBtns">
+                <button class="confirmCancel">キャンセル</button>
+                <button class="confirmOk">リセット</button>
+            </div>
+        </div>
+    `
+    overlay.querySelector(".confirmCancel").onclick = () => overlay.remove()
+    overlay.querySelector(".confirmOk").onclick = () => { overlay.remove(); onOk() }
+    document.body.appendChild(overlay)
+}
+
+document.getElementById("resetTier").onclick = () => {
+    showConfirm("ティア表をリセットしますか？\n全カードがトレイに戻ります。", () => {
+        tierData = getTierData()
+        const allCards = [
+            ...tierData.rows.flatMap(r => r.cards),
+            ...tierData.tray
+        ]
+        tierData.rows.forEach(r => r.cards = [])
+        tierData.tray = allCards
+        saveTierData(tierData)
+        renderTierRows()
+        renderTierTray()
+    })
+}
+
+// 画像保存
+document.getElementById("saveTierImage").onclick = async () => {
+    const btn = document.getElementById("saveTierImage")
+    btn.textContent = "生成中..."
+    btn.disabled = true
+
+    const target = document.getElementById("tierRows")
+    try {
+        const canvas = await html2canvas(target, {
+            backgroundColor: "#080c14",
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false
+        })
+        const link = document.createElement("a")
+        link.download = "tier_" + new Date().toISOString().slice(0,10) + ".png"
+        link.href = canvas.toDataURL("image/png")
+        link.click()
+    } catch(e) {
+        alert("画像の生成に失敗しました")
+    }
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
+    btn.disabled = false
 }
 
 
