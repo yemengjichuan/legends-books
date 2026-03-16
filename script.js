@@ -296,8 +296,14 @@ document.getElementById("goSelectFav2").onclick  = () => openSelectMode("favorit
 // ===== ティア表 =====
 let dragSrc  = null
 let tierData = null
-let trayFilter = "all"
 let traySearch = ""
+let traySortKey = ""   // "atk"|"def"|"hp"|"spd"|"hissatsu"|""
+let traySortOrder = "desc"
+
+// トレイ絞り込み状態
+const trayActiveFilters = {
+    attributes: [], rarities: [], weapons: [], spds: [], series: []
+}
 
 function initTierTray() {
     tierData = getTierData()
@@ -316,20 +322,111 @@ function renderTierTable() {
     renderTierRows()
     renderTierTray()
 
-    // トレイ検索
+    // 検索
     document.getElementById("traySearchBox").oninput = function() {
         traySearch = this.value.toLowerCase()
         renderTierTray()
     }
-    // トレイフィルター
-    document.querySelectorAll(".trayFilterBtn").forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll(".trayFilterBtn").forEach(b => b.classList.remove("active"))
-            btn.classList.add("active")
-            trayFilter = btn.dataset.filter
-            renderTierTray()
+
+    // 並び替えボタン（サイクル: none→atk→def→hp→spd→hissatsu→none）
+    const sortKeys = ["atk","def","hp","spd","hissatsu"]
+    const sortLabels = { "":"並び替え", atk:"ATK↓", def:"DEF↓", hp:"HP↓", spd:"SPD↓", hissatsu:"必殺↓" }
+    const sortLabelsAsc = { atk:"ATK↑", def:"DEF↑", hp:"HP↑", spd:"SPD↑", hissatsu:"必殺↑" }
+    const sortBtn = document.getElementById("traySort")
+    sortBtn.onclick = () => {
+        if (!traySortKey) {
+            traySortKey = "atk"; traySortOrder = "desc"
+        } else if (traySortOrder === "desc") {
+            traySortOrder = "asc"
+        } else {
+            const idx = sortKeys.indexOf(traySortKey)
+            if (idx < sortKeys.length - 1) { traySortKey = sortKeys[idx + 1]; traySortOrder = "desc" }
+            else { traySortKey = ""; traySortOrder = "desc" }
         }
+        document.getElementById("traySortLabel").textContent =
+            traySortKey
+                ? (traySortOrder === "desc" ? sortLabels[traySortKey] : sortLabelsAsc[traySortKey])
+                : "並び替え"
+        renderTierTray()
+    }
+
+    // 絞り込みモーダル初期化（一度だけ）
+    if (!document.getElementById("trayAttributeFilters").dataset.init) {
+        document.getElementById("trayAttributeFilters").dataset.init = "1"
+        createTrayFilterButtons(["アタッカー","ディフェンダー","フィニッシャー","マシン","アイテム","イベント","エネミー"], "trayAttributeFilters", "attributes")
+        createTrayFilterButtons(["LLR","LR","PR"], "trayRarityFilters", "rarities")
+        createTrayFilterButtons(["剣","パンチ","銃"], "trayWeaponFilters", "weapons")
+        const spdVals = [...new Set(cards.map(c => c.stats?.spd).filter(v => v != null))].sort((a,b) => a-b)
+        createTrayFilterButtons(spdVals.map(v => String(v)), "traySpdFilters", "spds")
+        // シリーズ
+        const set = new Set(); cards.forEach(c => { if (c.series) set.add(c.series) })
+        const area = document.getElementById("traySeriesFilters")
+        set.forEach(series => {
+            const label = document.createElement("label")
+            label.innerHTML = `<input type="checkbox" class="trayFilterSeries" value="${series}"> ${series}`
+            area.appendChild(label)
+        })
+    }
+}
+
+function createTrayFilterButtons(list, containerId, filterKey) {
+    const area = document.getElementById(containerId)
+    area.innerHTML = ""
+    list.forEach(name => {
+        const btn = document.createElement("div")
+        btn.className = "filterButton"
+        btn.textContent = name
+        btn.dataset.value = name
+        btn.onclick = () => btn.classList.toggle("active")
+        area.appendChild(btn)
     })
+}
+
+// トレイ絞り込みモーダル
+const trayFilterModal = document.getElementById("trayFilterModal")
+document.getElementById("openTrayFilter").onclick = () => trayFilterModal.classList.add("open")
+document.getElementById("closeTrayFilter").onclick = () => trayFilterModal.classList.remove("open")
+trayFilterModal.onclick = e => { if (e.target === trayFilterModal) trayFilterModal.classList.remove("open") }
+document.getElementById("resetTrayFilter").onclick = () => {
+    document.querySelectorAll("#trayFilterModal .filterButton.active").forEach(b => b.classList.remove("active"))
+    document.querySelectorAll(".trayFilterSeries:checked").forEach(c => c.checked = false)
+    renderTierTray()
+}
+document.getElementById("applyTrayFilter").onclick = () => {
+    trayFilterModal.classList.remove("open")
+    renderTierTray()
+}
+
+function getTrayFilteredCards() {
+    const attributes = [...document.querySelectorAll("#trayAttributeFilters .active")].map(e => e.dataset.value)
+    const rarities   = [...document.querySelectorAll("#trayRarityFilters .active")].map(e => e.dataset.value)
+    const weapons    = [...document.querySelectorAll("#trayWeaponFilters .active")].map(e => e.dataset.value)
+    const spds       = [...document.querySelectorAll("#traySpdFilters .active")].map(e => Number(e.dataset.value))
+    const series     = [...document.querySelectorAll(".trayFilterSeries:checked")].map(e => e.value)
+
+    let result = tierData.tray.map(cn => cards.find(c => c.cardNumber === cn)).filter(Boolean)
+
+    result = result.filter(card => {
+        if (attributes.length && !attributes.includes(card.attribute)) return false
+        if (rarities.length && !rarities.includes(card.rarity)) return false
+        if (spds.length && !spds.includes(card.stats?.spd)) return false
+        if (series.length && !series.includes(card.series)) return false
+        if (weapons.length && !weapons.some(w => (card.battleType||[]).includes(w))) return false
+        if (traySearch && !JSON.stringify(card).toLowerCase().includes(traySearch)) return false
+        return true
+    })
+
+    // 並び替え
+    if (traySortKey) {
+        result.sort((a, b) => {
+            const va = a.stats?.[traySortKey] ?? null
+            const vb = b.stats?.[traySortKey] ?? null
+            if (va === null && vb === null) return 0
+            if (va === null) return 1; if (vb === null) return -1
+            return traySortOrder === "desc" ? vb - va : va - vb
+        })
+    }
+    return result
 }
 
 function renderTierRows() {
@@ -360,28 +457,9 @@ function renderTierRows() {
 function renderTierTray() {
     const area = document.getElementById("tierTrayCards")
     area.innerHTML = ""
-
-    // フィルター・検索を適用
-    const filtered = tierData.tray.filter(cn => {
-        const card = cards.find(c => c.cardNumber === cn)
-        if (!card) return false
-        if (trayFilter !== "all") {
-            const rarityMatch = card.rarity === trayFilter
-            const weaponMatch = (card.battleType || []).includes(trayFilter)
-            if (!rarityMatch && !weaponMatch) return false
-        }
-        if (traySearch) {
-            const text = JSON.stringify(card).toLowerCase()
-            if (!text.includes(traySearch)) return false
-        }
-        return true
-    })
-
     document.getElementById("trayCount").textContent = tierData.tray.length
-    filtered.forEach(cn => {
-        const card = cards.find(c => c.cardNumber === cn)
-        if (card) area.appendChild(makeTierCard(card, "tray", false))
-    })
+    const filtered = getTrayFilteredCards()
+    filtered.forEach(card => area.appendChild(makeTierCard(card, "tray", false)))
     setupDropZone(area, "tray")
 }
 
@@ -586,10 +664,21 @@ document.getElementById("saveTierImage").onclick = async () => {
             allowTaint: true,
             logging: false
         })
-        const link = document.createElement("a")
-        link.download = "tier_" + new Date().toISOString().slice(0,10) + ".png"
-        link.href = canvas.toDataURL("image/png")
-        link.click()
+
+        const fileName = "tier_" + new Date().toISOString().slice(0,10) + ".png"
+
+        // スマホ対応：blobで開く
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement("a")
+            link.href = url
+            link.download = fileName
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            setTimeout(() => URL.revokeObjectURL(url), 3000)
+        }, "image/png")
+
     } catch(e) {
         alert("画像の生成に失敗しました")
     }
