@@ -734,7 +734,7 @@ document.getElementById("saveTierImage").onclick = async () => {
             y += rowH
         }
 
-        // まずダウンロード試行、ダメならモーダル表示
+        // ダウンロード
         canvas.toBlob(blob => {
             const url = URL.createObjectURL(blob)
             const link = document.createElement("a")
@@ -744,13 +744,6 @@ document.getElementById("saveTierImage").onclick = async () => {
             link.click()
             document.body.removeChild(link)
             setTimeout(() => URL.revokeObjectURL(url), 3000)
-
-            // iOSはダウンロードできないのでモーダルも同時に表示
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-            if (isIOS) {
-                document.getElementById("imageModalImg").src = canvas.toDataURL("image/png")
-                document.getElementById("imageModal").style.display = "flex"
-            }
         }, "image/png")
 
     } catch(e) {
