@@ -670,12 +670,15 @@ document.getElementById("saveTierImage").onclick = async () => {
             return
         }
 
-        // サイズ計算
-        const LABEL_W = 80
-        const CARD_W  = 100
-        const CARD_H  = 140
-        const GAP     = 6
-        const PAD     = 10
+        // 1枚目のカード画像を読み込んで実サイズを取得
+        const sampleCard = cards.find(c => c.cardNumber === rows[0].cards[0])
+        const sampleImg  = await loadImage(sampleCard.image)
+        const CARD_W = sampleImg.naturalWidth
+        const CARD_H = sampleImg.naturalHeight
+
+        const LABEL_W = Math.round(CARD_W * 0.7)
+        const GAP     = Math.round(CARD_W * 0.06)
+        const PAD     = Math.round(CARD_W * 0.1)
         const ROW_MIN_H = CARD_H + PAD * 2
 
         const maxCards = Math.max(...rows.map(r => r.cards.length))
@@ -683,7 +686,7 @@ document.getElementById("saveTierImage").onclick = async () => {
         const canvasH  = rows.length * ROW_MIN_H
 
         const canvas  = document.createElement("canvas")
-        canvas.width  = Math.max(canvasW, 300)
+        canvas.width  = Math.max(canvasW, 400)
         canvas.height = canvasH
         const ctx = canvas.getContext("2d")
 
@@ -691,7 +694,6 @@ document.getElementById("saveTierImage").onclick = async () => {
         ctx.fillStyle = "#080c14"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        // 各行を描画
         let y = 0
         for (const row of rows) {
             const rowH = ROW_MIN_H
@@ -700,16 +702,16 @@ document.getElementById("saveTierImage").onclick = async () => {
             ctx.fillStyle = row.color + "33"
             ctx.fillRect(0, y, LABEL_W, rowH)
 
-            // ラベル区切り線
+            // 右区切り線
             ctx.strokeStyle = row.color + "88"
-            ctx.lineWidth = 1
+            ctx.lineWidth = 2
             ctx.beginPath()
             ctx.moveTo(LABEL_W, y)
             ctx.lineTo(LABEL_W, y + rowH)
             ctx.stroke()
 
-            // 行区切り線
-            ctx.strokeStyle = "rgba(255,255,255,0.08)"
+            // 下区切り線
+            ctx.strokeStyle = "rgba(255,255,255,0.1)"
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(0, y + rowH)
@@ -718,48 +720,42 @@ document.getElementById("saveTierImage").onclick = async () => {
 
             // ラベルテキスト
             ctx.fillStyle = row.color
-            ctx.font = `bold ${row.label.length > 2 ? 22 : 32}px sans-serif`
+            const fontSize = row.label.length > 2
+                ? Math.round(LABEL_W * 0.35)
+                : Math.round(LABEL_W * 0.5)
+            ctx.font = `bold ${fontSize}px sans-serif`
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
             ctx.fillText(row.label, LABEL_W / 2, y + rowH / 2)
 
-            // カード画像を読み込んで描画
+            // カード描画
             let x = LABEL_W + PAD
             for (const cn of row.cards) {
                 const card = cards.find(c => c.cardNumber === cn)
                 if (!card) { x += CARD_W + GAP; continue }
 
-                await new Promise(resolve => {
-                    const img = new Image()
-                    img.crossOrigin = "anonymous"
-                    img.onload = () => {
-                        // 角丸
-                        const r = 5
-                        ctx.save()
-                        ctx.beginPath()
-                        ctx.moveTo(x + r, y + PAD)
-                        ctx.lineTo(x + CARD_W - r, y + PAD)
-                        ctx.quadraticCurveTo(x + CARD_W, y + PAD, x + CARD_W, y + PAD + r)
-                        ctx.lineTo(x + CARD_W, y + PAD + CARD_H - r)
-                        ctx.quadraticCurveTo(x + CARD_W, y + PAD + CARD_H, x + CARD_W - r, y + PAD + CARD_H)
-                        ctx.lineTo(x + r, y + PAD + CARD_H)
-                        ctx.quadraticCurveTo(x, y + PAD + CARD_H, x, y + PAD + CARD_H - r)
-                        ctx.lineTo(x, y + PAD + r)
-                        ctx.quadraticCurveTo(x, y + PAD, x + r, y + PAD)
-                        ctx.closePath()
-                        ctx.clip()
-                        ctx.drawImage(img, x, y + PAD, CARD_W, CARD_H)
-                        ctx.restore()
-                        resolve()
-                    }
-                    img.onerror = () => {
-                        // 画像読み込み失敗時はプレースホルダー
-                        ctx.fillStyle = "#1a2535"
-                        ctx.fillRect(x, y + PAD, CARD_W, CARD_H)
-                        resolve()
-                    }
-                    img.src = card.image
-                })
+                try {
+                    const img = await loadImage(card.image)
+                    const r = Math.round(CARD_W * 0.06)
+                    ctx.save()
+                    ctx.beginPath()
+                    ctx.moveTo(x + r, y + PAD)
+                    ctx.lineTo(x + CARD_W - r, y + PAD)
+                    ctx.quadraticCurveTo(x + CARD_W, y + PAD, x + CARD_W, y + PAD + r)
+                    ctx.lineTo(x + CARD_W, y + PAD + CARD_H - r)
+                    ctx.quadraticCurveTo(x + CARD_W, y + PAD + CARD_H, x + CARD_W - r, y + PAD + CARD_H)
+                    ctx.lineTo(x + r, y + PAD + CARD_H)
+                    ctx.quadraticCurveTo(x, y + PAD + CARD_H, x, y + PAD + CARD_H - r)
+                    ctx.lineTo(x, y + PAD + r)
+                    ctx.quadraticCurveTo(x, y + PAD, x + r, y + PAD)
+                    ctx.closePath()
+                    ctx.clip()
+                    ctx.drawImage(img, x, y + PAD, CARD_W, CARD_H)
+                    ctx.restore()
+                } catch {
+                    ctx.fillStyle = "#1a2535"
+                    ctx.fillRect(x, y + PAD, CARD_W, CARD_H)
+                }
                 x += CARD_W + GAP
             }
             y += rowH
@@ -775,6 +771,17 @@ document.getElementById("saveTierImage").onclick = async () => {
 
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
     btn.disabled = false
+}
+
+// 画像読み込みヘルパー
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = "anonymous"
+        img.onload  = () => resolve(img)
+        img.onerror = () => reject(new Error("画像読み込み失敗: " + src))
+        img.src = src
+    })
 }
 
 
