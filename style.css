@@ -207,11 +207,13 @@ body.select-mode #cardList { padding-bottom: 70px; }
 /* ティア行エリア（スクロールなし） */
 .tierTableArea { background: var(--bg); }
 
-/* トレイ */
 .tierTray { border-top: 2px solid var(--border); background: var(--surface); }
-.tierTrayHeader { display: flex; align-items: center; gap: 10px; padding: 10px 12px 6px; flex-wrap: wrap; }
-.tierTrayTitle { font-size: 12px; color: var(--text-dim); font-weight: 700; white-space: nowrap; }
-.tierTraySearch { flex: 1; min-width: 140px; }
+.tierTrayHeader {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px 8px; flex-wrap: nowrap; overflow-x: auto;
+}
+.tierTrayTitle { font-size: 12px; color: var(--text-dim); font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.tierTraySearch { flex: 1; min-width: 80px; }
 .tierTraySearch input {
     width: 100%; padding: 6px 10px; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 7px;
@@ -220,16 +222,16 @@ body.select-mode #cardList { padding-bottom: 70px; }
 .tierTraySearch input:focus { border-color: var(--accent); }
 .tierTraySearch input::placeholder { color: var(--text-dim); }
 
-.tierTrayFilters { display: flex; gap: 6px; padding: 0 12px 8px; flex-wrap: wrap; }
-.trayFilterBtn {
-    padding: 4px 11px; border-radius: 16px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text-dim); font-size: 12px;
-    font-family: var(--font-body); cursor: pointer; transition: all 0.15s;
-}
-.trayFilterBtn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
-
 .tierTrayCards { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 12px 12px; min-height: 52px; }
 .tierTrayCards.drag-over { background: rgba(0,200,255,0.06); border-radius: 8px; }
+
+/* トレイ絞り込みモーダル */
+.trayFilterModal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; justify-content: center; align-items: center;
+    z-index: 9999; backdrop-filter: blur(4px);
+}
+.trayFilterModal.open { display: flex; }
 
 /* ティア行 */
 .tierRow { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); min-height: 68px; }
