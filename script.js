@@ -664,28 +664,15 @@ document.getElementById("saveTierImage").onclick = async () => {
             allowTaint: true,
             logging: false
         })
-
         const dataUrl = canvas.toDataURL("image/png")
-
-        // iOS Safari判定
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
         if (isIOS) {
-            // iOSは新しいタブで開いて長押し保存を促す
-            const win = window.open()
-            win.document.write(`
-                <html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-                <title>ティア表</title>
-                <style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;}
-                p{color:#fff;font-size:14px;font-family:sans-serif;text-align:center;padding:0 20px;}
-                img{max-width:100%;}</style></head>
-                <body>
-                <p>画像を長押しして「写真に保存」または「画像を保存」を選んでください</p>
-                <img src="${dataUrl}">
-                </body></html>
-            `)
+            // iOS：同ページ内にプレビュー表示して長押し保存を促す
+            const overlay = document.getElementById("imagePreviewOverlay")
+            document.getElementById("imagePreviewImg").src = dataUrl
+            overlay.style.display = "flex"
         } else {
-            // Android / PC
             canvas.toBlob(blob => {
                 const url = URL.createObjectURL(blob)
                 const link = document.createElement("a")
@@ -698,7 +685,7 @@ document.getElementById("saveTierImage").onclick = async () => {
             }, "image/png")
         }
     } catch(e) {
-        alert("画像の生成に失敗しました")
+        alert("画像の生成に失敗しました: " + e.message)
     }
 
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
