@@ -267,14 +267,14 @@
     <button id="selectDone" class="btn-selectDone">完了</button>
 </div>
 
-<!-- 画像プレビューオーバーレイ -->
-<div id="imagePreviewOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;">
-    <p style="color:#fff;font-size:13px;text-align:center;margin-bottom:12px;line-height:1.8;">
-        画像を<strong>長押し</strong>して「写真に保存」を選んでください<br>
-        <span style="color:rgba(255,255,255,0.5);font-size:11px;">（iOSの仕様により直接保存できません）</span>
+<!-- 画像プレビューモーダル -->
+<div id="imageModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:14px;">
+    <p style="color:#fff;font-size:13px;text-align:center;line-height:1.8;margin:0;">
+        📱 iPhoneは画像を<strong>長押し</strong>→「写真に保存」<br>
+        💻 PCは画像を<strong>右クリック</strong>→「名前を付けて画像を保存」
     </p>
-    <img id="imagePreviewImg" style="max-width:100%;border-radius:8px;">
-    <button onclick="document.getElementById('imagePreviewOverlay').style.display='none'" style="margin-top:16px;padding:12px 32px;background:#333;border:1px solid #555;border-radius:8px;color:#fff;font-size:14px;cursor:pointer;">閉じる</button>
+    <img id="imageModalImg" style="max-width:100%;max-height:70vh;border-radius:10px;display:block;">
+    <button id="closeImageModal" style="padding:12px 40px;background:#222;border:1px solid #444;border-radius:10px;color:#fff;font-size:14px;cursor:pointer;font-family:sans-serif;">閉じる</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
