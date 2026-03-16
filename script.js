@@ -649,15 +649,18 @@ document.getElementById("resetTier").onclick = () => {
     })
 }
 
-// 画像保存
+// 画像保存モーダル
+document.getElementById("closeImageModal").onclick = () => {
+    document.getElementById("imageModal").style.display = "none"
+}
+
 document.getElementById("saveTierImage").onclick = async () => {
     const btn = document.getElementById("saveTierImage")
     btn.textContent = "生成中..."
     btn.disabled = true
 
-    const target = document.getElementById("tierRows")
     try {
-        const canvas = await html2canvas(target, {
+        const canvas = await html2canvas(document.getElementById("tierRows"), {
             backgroundColor: "#080c14",
             scale: 2,
             useCORS: true,
@@ -665,25 +668,9 @@ document.getElementById("saveTierImage").onclick = async () => {
             logging: false
         })
         const dataUrl = canvas.toDataURL("image/png")
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
-
-        if (isIOS) {
-            // iOS：同ページ内にプレビュー表示して長押し保存を促す
-            const overlay = document.getElementById("imagePreviewOverlay")
-            document.getElementById("imagePreviewImg").src = dataUrl
-            overlay.style.display = "flex"
-        } else {
-            canvas.toBlob(blob => {
-                const url = URL.createObjectURL(blob)
-                const link = document.createElement("a")
-                link.href = url
-                link.download = "tier_" + new Date().toISOString().slice(0,10) + ".png"
-                document.body.appendChild(link)
-                link.click()
-                document.body.removeChild(link)
-                setTimeout(() => URL.revokeObjectURL(url), 3000)
-            }, "image/png")
-        }
+        const imgModal = document.getElementById("imageModal")
+        document.getElementById("imageModalImg").src = dataUrl
+        imgModal.style.display = "flex"
     } catch(e) {
         alert("画像の生成に失敗しました: " + e.message)
     }
