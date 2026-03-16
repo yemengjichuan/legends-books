@@ -89,24 +89,48 @@
 </div>
 
 <div id="pageTier" class="page">
-    <!-- ティア表ヘッダー -->
-    <div class="tierTopBar">
-        <span class="tierTopTitle">ティア表</span>
-        <button id="openTierSettings" class="btn-tierSettings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-            段階を編集
-        </button>
+    <!-- ティア表エリア（上部固定） -->
+    <div class="tierTableArea" id="tierTableArea">
+        <div class="tierTopBar">
+            <span class="tierTopTitle">ティア表</span>
+            <div class="tierTopActions">
+                <button id="saveTierImage" class="btn-tierAction">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    保存
+                </button>
+                <button id="resetTier" class="btn-tierAction btn-tierReset">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.37"/></svg>
+                    リセット
+                </button>
+                <button id="openTierSettings" class="btn-tierSettings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    段階編集
+                </button>
+            </div>
+        </div>
+        <div id="tierRows"></div>
     </div>
 
-    <!-- ティア行 -->
-    <div id="tierRows"></div>
-
-    <!-- 未配置カードトレイ -->
+    <!-- 未配置カードトレイ（下部スクロール） -->
     <div class="tierTray" id="tierTray">
-        <div class="tierTrayLabel">未配置カード（ここからドラッグ）</div>
+        <div class="tierTrayHeader">
+            <span class="tierTrayTitle">未配置カード（<span id="trayCount">0</span>枚）</span>
+            <div class="tierTraySearch">
+                <input id="traySearchBox" placeholder="名前・シリーズで検索..." />
+            </div>
+        </div>
+        <div class="tierTrayFilters">
+            <button class="trayFilterBtn active" data-filter="all">すべて</button>
+            <button class="trayFilterBtn" data-filter="LLR">LLR</button>
+            <button class="trayFilterBtn" data-filter="LR">LR</button>
+            <button class="trayFilterBtn" data-filter="PR">PR</button>
+            <button class="trayFilterBtn" data-filter="剣">剣</button>
+            <button class="trayFilterBtn" data-filter="パンチ">パンチ</button>
+            <button class="trayFilterBtn" data-filter="銃">銃</button>
+        </div>
         <div class="tierTrayCards" id="tierTrayCards"></div>
     </div>
 </div>
@@ -211,6 +235,7 @@
     <button id="selectDone" class="btn-selectDone">完了</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
