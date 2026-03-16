@@ -117,21 +117,53 @@
     <!-- 未配置カードトレイ（下部スクロール） -->
     <div class="tierTray" id="tierTray">
         <div class="tierTrayHeader">
-            <span class="tierTrayTitle">未配置カード（<span id="trayCount">0</span>枚）</span>
+            <span class="tierTrayTitle">未配置（<span id="trayCount">0</span>枚）</span>
             <div class="tierTraySearch">
-                <input id="traySearchBox" placeholder="名前・シリーズで検索..." />
+                <input id="traySearchBox" placeholder="カード名・スキルで検索...">
             </div>
-        </div>
-        <div class="tierTrayFilters">
-            <button class="trayFilterBtn active" data-filter="all">すべて</button>
-            <button class="trayFilterBtn" data-filter="LLR">LLR</button>
-            <button class="trayFilterBtn" data-filter="LR">LR</button>
-            <button class="trayFilterBtn" data-filter="PR">PR</button>
-            <button class="trayFilterBtn" data-filter="剣">剣</button>
-            <button class="trayFilterBtn" data-filter="パンチ">パンチ</button>
-            <button class="trayFilterBtn" data-filter="銃">銃</button>
+            <button id="openTrayFilter" class="btn-filter" style="flex-shrink:0;font-size:12px;padding:6px 10px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                絞り込み
+            </button>
+            <button id="traySort" class="sortOrderBtn" data-order="none" style="font-size:12px;padding:5px 8px;">
+                <span id="traySortLabel">並び替え</span>
+            </button>
         </div>
         <div class="tierTrayCards" id="tierTrayCards"></div>
+    </div>
+</div>
+
+<!-- ===== トレイ絞り込みモーダル ===== -->
+<div id="trayFilterModal" class="trayFilterModal">
+    <div class="filterContent">
+        <div class="filterHeader">
+            <h2>絞り込み</h2>
+            <button id="closeTrayFilter" class="closeX">✕</button>
+        </div>
+        <div class="filterSection">
+            <h3><span class="filterIcon">⚔</span> 属性</h3>
+            <div id="trayAttributeFilters" class="filterGroup"></div>
+        </div>
+        <div class="filterSection">
+            <h3><span class="filterIcon">★</span> レアリティ</h3>
+            <div id="trayRarityFilters" class="filterGroup"></div>
+        </div>
+        <div class="filterSection">
+            <h3><span class="filterIcon">🗡</span> 武器</h3>
+            <div id="trayWeaponFilters" class="filterGroup"></div>
+        </div>
+        <div class="filterSection">
+            <h3><span class="filterIcon">💨</span> スピード（SPD）</h3>
+            <div id="traySpdFilters" class="filterGroup"></div>
+        </div>
+        <div class="filterSection">
+            <h3><span class="filterIcon">📺</span> 登場作品</h3>
+            <div id="traySeriesFilters" class="seriesGrid"></div>
+        </div>
+        <div class="filterActions">
+            <button id="resetTrayFilter" class="btn-reset">リセット</button>
+            <button id="applyTrayFilter" class="btn-apply">適用する</button>
+        </div>
     </div>
 </div>
 
