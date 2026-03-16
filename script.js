@@ -660,28 +660,117 @@ document.getElementById("saveTierImage").onclick = async () => {
     btn.disabled = true
 
     try {
-        // タイムアウト15秒
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("タイムアウト")), 15000)
-        )
+        const data = getTierData()
+        const rows = data.rows.filter(r => r.cards.length > 0)
 
-        const canvasPromise = html2canvas(document.getElementById("tierRows"), {
-            backgroundColor: "#080c14",
-            scale: 1,          // スマホ負荷軽減のためscale:1に
-            useCORS: false,    // CORSを無効にして画像読み込みを単純化
-            allowTaint: true,
-            logging: false,
-            imageTimeout: 10000
-        })
+        if (rows.length === 0) {
+            alert("ティア行にカードがありません")
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
+            btn.disabled = false
+            return
+        }
 
-        const canvas = await Promise.race([canvasPromise, timeoutPromise])
+        // サイズ計算
+        const LABEL_W = 56
+        const CARD_W  = 54
+        const CARD_H  = 76
+        const GAP     = 4
+        const PAD     = 8
+        const ROW_MIN_H = CARD_H + PAD * 2
+
+        const maxCards = Math.max(...rows.map(r => r.cards.length))
+        const canvasW  = LABEL_W + PAD + maxCards * (CARD_W + GAP) + PAD
+        const canvasH  = rows.length * ROW_MIN_H
+
+        const canvas  = document.createElement("canvas")
+        canvas.width  = Math.max(canvasW, 300)
+        canvas.height = canvasH
+        const ctx = canvas.getContext("2d")
+
+        // 背景
+        ctx.fillStyle = "#080c14"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // 各行を描画
+        let y = 0
+        for (const row of rows) {
+            const rowH = ROW_MIN_H
+
+            // ラベル背景
+            ctx.fillStyle = row.color + "33"
+            ctx.fillRect(0, y, LABEL_W, rowH)
+
+            // ラベル区切り線
+            ctx.strokeStyle = row.color + "88"
+            ctx.lineWidth = 1
+            ctx.beginPath()
+            ctx.moveTo(LABEL_W, y)
+            ctx.lineTo(LABEL_W, y + rowH)
+            ctx.stroke()
+
+            // 行区切り線
+            ctx.strokeStyle = "rgba(255,255,255,0.08)"
+            ctx.lineWidth = 1
+            ctx.beginPath()
+            ctx.moveTo(0, y + rowH)
+            ctx.lineTo(canvas.width, y + rowH)
+            ctx.stroke()
+
+            // ラベルテキスト
+            ctx.fillStyle = row.color
+            ctx.font = `bold ${row.label.length > 2 ? 16 : 22}px sans-serif`
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            ctx.fillText(row.label, LABEL_W / 2, y + rowH / 2)
+
+            // カード画像を読み込んで描画
+            let x = LABEL_W + PAD
+            for (const cn of row.cards) {
+                const card = cards.find(c => c.cardNumber === cn)
+                if (!card) { x += CARD_W + GAP; continue }
+
+                await new Promise(resolve => {
+                    const img = new Image()
+                    img.crossOrigin = "anonymous"
+                    img.onload = () => {
+                        // 角丸
+                        const r = 5
+                        ctx.save()
+                        ctx.beginPath()
+                        ctx.moveTo(x + r, y + PAD)
+                        ctx.lineTo(x + CARD_W - r, y + PAD)
+                        ctx.quadraticCurveTo(x + CARD_W, y + PAD, x + CARD_W, y + PAD + r)
+                        ctx.lineTo(x + CARD_W, y + PAD + CARD_H - r)
+                        ctx.quadraticCurveTo(x + CARD_W, y + PAD + CARD_H, x + CARD_W - r, y + PAD + CARD_H)
+                        ctx.lineTo(x + r, y + PAD + CARD_H)
+                        ctx.quadraticCurveTo(x, y + PAD + CARD_H, x, y + PAD + CARD_H - r)
+                        ctx.lineTo(x, y + PAD + r)
+                        ctx.quadraticCurveTo(x, y + PAD, x + r, y + PAD)
+                        ctx.closePath()
+                        ctx.clip()
+                        ctx.drawImage(img, x, y + PAD, CARD_W, CARD_H)
+                        ctx.restore()
+                        resolve()
+                    }
+                    img.onerror = () => {
+                        // 画像読み込み失敗時はプレースホルダー
+                        ctx.fillStyle = "#1a2535"
+                        ctx.fillRect(x, y + PAD, CARD_W, CARD_H)
+                        resolve()
+                    }
+                    img.src = card.image
+                })
+                x += CARD_W + GAP
+            }
+            y += rowH
+        }
+
         const dataUrl = canvas.toDataURL("image/png")
-
         document.getElementById("imageModalImg").src = dataUrl
         document.getElementById("imageModal").style.display = "flex"
 
     } catch(e) {
-        alert("画像生成に失敗しました。\n理由: " + e.message + "\n\nカード画像が少ない状態でお試しください。")
+        alert("画像生成に失敗しました: " + e.message)
     }
 
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
