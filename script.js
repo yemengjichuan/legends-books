@@ -660,19 +660,28 @@ document.getElementById("saveTierImage").onclick = async () => {
     btn.disabled = true
 
     try {
-        const canvas = await html2canvas(document.getElementById("tierRows"), {
+        // タイムアウト15秒
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("タイムアウト")), 15000)
+        )
+
+        const canvasPromise = html2canvas(document.getElementById("tierRows"), {
             backgroundColor: "#080c14",
-            scale: 2,
-            useCORS: true,
+            scale: 1,          // スマホ負荷軽減のためscale:1に
+            useCORS: false,    // CORSを無効にして画像読み込みを単純化
             allowTaint: true,
-            logging: false
+            logging: false,
+            imageTimeout: 10000
         })
+
+        const canvas = await Promise.race([canvasPromise, timeoutPromise])
         const dataUrl = canvas.toDataURL("image/png")
-        const imgModal = document.getElementById("imageModal")
+
         document.getElementById("imageModalImg").src = dataUrl
-        imgModal.style.display = "flex"
+        document.getElementById("imageModal").style.display = "flex"
+
     } catch(e) {
-        alert("画像の生成に失敗しました: " + e.message)
+        alert("画像生成に失敗しました。\n理由: " + e.message + "\n\nカード画像が少ない状態でお試しください。")
     }
 
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存`
